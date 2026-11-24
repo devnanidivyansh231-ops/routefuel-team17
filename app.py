@@ -259,12 +259,14 @@ else:
     saving_delta = "vs. equal-speed plan"
     delta_color = "normal" if result.savings_percent >= 0 else "inverse"
 
-metric_columns = st.columns(4)
-metric_columns[0].metric("Segment 1 speed", f"{result.speed_1:.2f} km/h")
-metric_columns[1].metric("Segment 2 speed", f"{result.speed_2:.2f} km/h")
-metric_columns[2].metric("Modeled fuel use", f"{result.fuel:.3f} units")
-metric_columns[3].metric(
-    "Fuel difference",
+speed_columns = st.columns(2)
+speed_columns[0].metric("Segment 1 speed", f"{result.speed_1:.2f} km/h")
+speed_columns[1].metric("Segment 2 speed", f"{result.speed_2:.2f} km/h")
+
+comparison_columns = st.columns(2)
+comparison_columns[0].metric("Modeled fuel use", f"{result.fuel:.3f} model units")
+comparison_columns[1].metric(
+    "Fuel vs. equal-speed plan",
     saving_label,
     delta=saving_delta,
     delta_color=delta_color,
@@ -275,7 +277,8 @@ st.success(
     f"{result.time_2:.2f} h on segment 2 = {result.total_time:.2f} h."
 )
 
-chart_column, explanation_column = st.columns([1.65, 1], gap="large")
+chart_column = st.container()
+explanation_column = st.container()
 
 with chart_column:
     st.subheader("Fuel use across feasible speed plans")
@@ -328,7 +331,7 @@ with chart_column:
     axis.tick_params(colors="#5b7067")
     axis.legend(frameon=False, loc="best")
     figure.tight_layout(pad=1.5)
-    st.pyplot(figure, use_container_width=True)
+    st.pyplot(figure, width="stretch")
     plt.close(figure)
 
 with explanation_column:
@@ -365,33 +368,26 @@ with explanation_column:
 with st.expander("Understand the project model"):
     a1, b1 = SEGMENT_1_COEFFICIENTS
     a2, b2 = SEGMENT_2_COEFFICIENTS
-    formula_column, explanation_column = st.columns([1.15, 1])
-    with formula_column:
-        st.markdown("**1. Fuel objective**")
-        st.latex(
-            rf"F(v_1,v_2) = {distance_1:g}({a1}v_1^2 + {b1:g}/v_1) "
-            rf"+ {distance_2:g}({a2}v_2^2 + {b2:g}/v_2)"
-        )
-        st.markdown("**2. Delivery-time condition**")
-        st.latex(
-            rf"rac{{{distance_1:g}}}{{v_1}} + "
-            rf"rac{{{distance_2:g}}}{{v_2}} = {deadline:g} mathrm{{hours}}"
-        )
-    with explanation_column:
-        st.markdown(
-            """
-            - The terms with speed squared make higher speeds more costly in this model.
-            - The reciprocal terms account for the model's lower-speed contribution.
-            - The optimizer allocates travel time between the segments, then converts
-              those times back into speeds.
-            - The graph's lowest point is the recommended plan; the equal-speed point
-              is the comparison.
-            """
-        )
-        st.caption(
-            "The coefficients are illustrative teaching values. Fuel is reported in "
-            "model units, not litres."
-        )
+    st.markdown("**Fuel used per kilometre**")
+    formula_columns = st.columns(2)
+    formula_columns[0].latex(rf"f_1(v_1) = {a1:g}v_1^2 + \frac{{{b1:g}}}{{v_1}}")
+    formula_columns[1].latex(rf"f_2(v_2) = {a2:g}v_2^2 + \frac{{{b2:g}}}{{v_2}}")
+
+    st.markdown("**Total fuel and delivery-time condition**")
+    st.latex(r"F = d_1 f_1(v_1) + d_2 f_2(v_2)")
+    st.latex(r"\frac{d_1}{v_1} + \frac{d_2}{v_2} = T")
+
+    st.markdown(
+        """
+        - The speed-squared terms grow as speed increases; the reciprocal terms shrink.
+        - Every point on the chart satisfies the delivery-time condition and the speed limits.
+        - The lowest point is the recommended plan. The equal-speed point is the baseline.
+        """
+    )
+    st.caption(
+        f"Current route: {distance_1:g} km + {distance_2:g} km in {deadline:g} hours. "
+        "The coefficients are illustrative, so fuel is shown in model units, not litres."
+    )
 
 st.caption(
     "This model assumes constant average speed over each segment. It does not include "
