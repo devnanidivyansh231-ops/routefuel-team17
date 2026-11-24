@@ -28,9 +28,9 @@ Install Node.js (which includes npm). In VS Code, open a terminal at the reposit
 
 ```powershell
 cd frontend
-npm install
 Copy-Item .env.example .env.local
-npm run dev
+npm.cmd install
+npm.cmd run dev
 ```
 
 The frontend opens at `http://localhost:5173`. Without Supabase environment values, route optimization and the chart still work in preview mode; Google sign-in and saved plans remain disabled.
@@ -61,10 +61,10 @@ The app calls Supabase `signInWithOAuth({ provider: "google" })`. The public Sup
 The repository already includes `firebase.json`; it publishes `frontend/dist` and rewrites app routes to `index.html`.
 
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/).
-2. Install the Firebase CLI once: `npm install --global firebase-tools`.
-3. From a terminal at the repository root, run `firebase login` and `firebase use --add`, then select your Firebase project.
-4. Build with your local Supabase settings: `cd frontend`, `npm install`, `npm run build`, then return to the repository root with `cd ..`.
-5. Publish the static web app with `firebase deploy --only hosting`.
+2. Install the Firebase CLI once: `npm.cmd install --global firebase-tools`.
+3. From a terminal at the repository root, run `firebase.cmd login` and `firebase.cmd use --add`, then select your Firebase project.
+4. Build with your local Supabase settings: `cd frontend`, `npm.cmd install`, `npm.cmd run build`, then return to the repository root with `cd ..`.
+5. Publish the static web app with `firebase.cmd deploy --only hosting`.
 6. Add the resulting `https://<firebase-project-id>.web.app` origin to the Supabase Auth URL allow list and to Google's Authorized JavaScript origins. Add the `firebaseapp.com` origin too if you use it.
 
 Firebase Hosting is designed to serve the app's static assets and supports SPA rewrites; it does not host the Python Streamlit server. See [Firebase Hosting quickstart](https://firebase.google.com/docs/hosting/quickstart) and [Firebase Hosting rewrites](https://firebase.google.com/docs/hosting/full-config#rewrites).
