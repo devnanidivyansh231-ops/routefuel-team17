@@ -6,12 +6,16 @@ create table if not exists public.route_runs (
   deadline_hours double precision not null check (deadline_hours > 0),
   min_speed double precision not null check (min_speed > 0),
   max_speed double precision not null check (max_speed > min_speed),
-  speed_1 double precision not null check (speed_1 > 0),
-  speed_2 double precision not null check (speed_2 > 0),
+  speed_1 double precision not null check (speed_1 between min_speed and max_speed),
+  speed_2 double precision not null check (speed_2 between min_speed and max_speed),
   fuel_units double precision not null check (fuel_units >= 0),
   equal_speed_fuel_units double precision check (equal_speed_fuel_units >= 0),
   savings_percent double precision,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  check (
+    abs((distance_1 / speed_1) + (distance_2 / speed_2) - deadline_hours)
+      <= 0.000001
+  )
 );
 
 create index if not exists route_runs_user_created_idx
